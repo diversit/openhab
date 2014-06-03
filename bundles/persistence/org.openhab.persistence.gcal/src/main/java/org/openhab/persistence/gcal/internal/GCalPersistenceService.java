@@ -62,8 +62,8 @@ public class GCalPersistenceService implements PersistenceService, ManagedServic
 	
 	private static final String GCAL_SCHEDULER_GROUP = "GoogleCalendar";
 	
-	/** the upload interval (optional, defaults to 10 seconds) */
-	private static int uploadInterval = 10;
+	/** the upload interval (optional, defaults to 5 minutes) */
+	private static int uploadInterval = 300;
 
 	private static String username = "";
 	private static String password = "";
@@ -250,18 +250,21 @@ public class GCalPersistenceService implements PersistenceService, ManagedServic
 		if (config != null) {
 			String usernameString = (String) config.get("username");
 			username = usernameString;
+			logger.trace("username: {}", username);
 			if (StringUtils.isBlank(username)) {
 				throw new ConfigurationException("gcal:username", "username must not be blank - please configure an aproppriate username in openhab.cfg");
 			}
 
 			String passwordString = (String) config.get("password");
 			password = passwordString;
+			logger.trace("password: {}", password);
 			if (StringUtils.isBlank(password)) {
 				throw new ConfigurationException("gcal:password", "password must not be blank - please configure an aproppriate password in openhab.cfg");
 			}
 
 			String urlString = (String) config.get("url");
 			url = urlString;
+			logger.trace("url: {}", url);
 			if (StringUtils.isBlank(url)) {
 				throw new ConfigurationException("gcal:url", "url must not be blank - please configure an aproppriate url in openhab.cfg");
 			}
@@ -272,14 +275,26 @@ public class GCalPersistenceService implements PersistenceService, ManagedServic
 					offset = Integer.valueOf(offsetString);
 				}
 				catch (IllegalArgumentException iae) {
-					logger.warn("couldn't parse '{}' to an integer");
+					logger.warn("offset: couldn't parse '{}' to an integer");
 				}
 			}
+			logger.trace("offset: {}", offsetString);
+			
+			String uploadIntervalString = (String) config.get("uploadInterval");
+			if (StringUtils.isNotBlank(uploadIntervalString)) {
+				try {
+					uploadInterval = Integer.valueOf(uploadIntervalString);
+				} catch (IllegalArgumentException iae) {
+					logger.warn("uploadInterval: couldn't parse '{}' to an integer", uploadIntervalString);
+				}
+			}
+			logger.trace("uploadInterval: {}", uploadIntervalString);
 			
 			String executeScriptString = (String) config.get("executescript");
 			if (StringUtils.isNotBlank(executeScriptString)) {
 				executeScript = executeScriptString;
 			}
+			logger.trace("exectureScript is: {}", executeScript);
 			
 			initialized = true;
 		}
